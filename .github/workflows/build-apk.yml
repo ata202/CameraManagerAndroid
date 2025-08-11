@@ -3,7 +3,7 @@ name: Build Android APK (Debug)
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
   build:
@@ -34,6 +34,18 @@ jobs:
           wget https://services.gradle.org/distributions/gradle-8.7-bin.zip -O /tmp/gradle.zip
           unzip -q /tmp/gradle.zip -d $HOME
           echo "$HOME/gradle-8.7/bin" >> $GITHUB_PATH
+
+      # --- إصلاح ملف build.gradle.kts داخل المشروع المفكوك ---
+      - name: Patch root Gradle plugins
+        run: |
+          cat > CameraManagerAndroid/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application") version "8.5.0" apply false
+              id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+          }
+          EOF
+          echo "Patched CameraManagerAndroid/build.gradle.kts:"
+          cat CameraManagerAndroid/build.gradle.kts
 
       - name: Build debug APK
         working-directory: ./CameraManagerAndroid
